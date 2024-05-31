@@ -1,4 +1,4 @@
-This is a [FastAPI](https://fastapi.tiangolo.com/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+This is a [FastAPI](https://fastapi.tiangolo.com/) project for Sales AI API integration.
 
 ## Getting Started
 
