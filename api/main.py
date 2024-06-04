@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .app.router import auth as auth
+
 import uvicorn
 
 app = FastAPI()
@@ -13,8 +15,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, tags=["auth"])
 # define the route:
 @app.get("/", tags=["root"])
+
 def root():
     return {"message": "Hello World"}
 
