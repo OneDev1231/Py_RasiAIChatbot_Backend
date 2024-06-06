@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .app.router import auth as auth
+from .app.router import upsert as upsert
 
 import uvicorn
 
@@ -16,6 +17,8 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, tags=["auth"])
+app.include_router(upsert.router, tags=["upsert"])
+
 # define the route:
 @app.get("/", tags=["root"])
 
