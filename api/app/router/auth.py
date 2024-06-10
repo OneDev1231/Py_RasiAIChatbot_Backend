@@ -40,8 +40,10 @@ def signup(request: SignUpRequest):
             }
             response = supabase.table("business_owner").insert(data).execute()
             print("Row added: ", response.data)
+            return response
         except Exception as e:
             print("Error:", e)
+            return e
     except Exception as e:
         print("Error during sign-up:", e)
         return e
@@ -58,20 +60,38 @@ def signin(request: SignInRequest):
             "message": "User signed in successfully",
             "user_id": response.user.id,
         })
-        resp.set_cookie(
-            key="access_token",
-            value=response.session.access_token,
-            httponly=True,
-            secure=True,
-            samesite="lax"
-        )
-        resp.set_cookie(
-            key="refresh_token",
-            value=response.session.refresh_token,
-            httponly=True,
-            secure=True,
-            samesite="lax"
-        )
+        is_production = os.getenv("ENV") == "production"
+        print(is_production)
+        if is_production:
+            resp.set_cookie(
+                key="access_token",
+                value=response.session.access_token,
+                httponly=False,
+                secure=True,
+                samesite="None",
+            )
+            resp.set_cookie(
+                key="refresh_token",
+                value=response.session.refresh_token,
+                httponly=False,
+                secure=True,
+                samesite="None",
+            )
+        else:
+            resp.set_cookie(
+                key="access_token",
+                value=response.session.access_token,
+                httponly=False,
+                secure=False,
+                samesite="Lax",
+            )
+            resp.set_cookie(
+                key="refresh_token",
+                value=response.session.refresh_token,
+                httponly=False,
+                secure=False,
+                samesite="Lax",
+            )
         print(resp)
         return resp
         # Access token and user information can be accessed via response
@@ -98,3 +118,24 @@ def refresh_token(response: Response, refresh_token: Optional[str] = Cookie(None
     resp.set_cookie(key="access_token", value=new_access_token, httponly=True, secure=True, samesite="Lax")
     resp.set_cookie(key="refresh_token", value=new_refresh_token, httponly=True, secure=True, samesite="Lax")
     return resp
+
+@router.post("/signout")
+def signout(request: Request):
+    try:
+        # This assumes that the request includes a session or access token in cookies
+        
+        token = request.cookies.get("access_token")
+        print(token)
+        if not token:
+            raise HTTPException(status_code=400, detail="No access token provided")
+
+        # Call Supabase signout or session invalidation logic here
+        
+        # Supabase currently does not have a direct signout method on server-side using the python client.
+        # You might need to handle session or JWT revocation on the client side.
+
+        response = {"message": "Signout successful"}
+        return response
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
