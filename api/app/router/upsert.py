@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Optional, Tuple
 from fastapi import APIRouter, Depends, File, Form, UploadFile, HTTPException, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import httpx
 import os
@@ -32,9 +33,12 @@ extension_list = ["csv", "docx", "pdf", "json"]
 
 class AddChatbotRequest(BaseModel):
     chatbotName: str
+    prompt: str
+             
+
 
 @router.post("/add_chatbot")
-async def add_chatbot(request: AddChatbotRequest, current_user: dict = Depends(get_current_user)):
+async def add_chatbot(request: AddChatbotRequest, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
     print(current_user)
     print(type(current_user))
     user_id = current_user.user.id
@@ -52,8 +56,9 @@ async def add_chatbot(request: AddChatbotRequest, current_user: dict = Depends(g
 async def upsert_file(
     file: UploadFile = File(...),
     chatbotName: str = Form(...),
-    current_user: dict = Depends(get_current_user)
+    user_data: Tuple[dict, Optional[str], Optional[str]] = Depends(get_current_user)
 ):
+    current_user, updated_access_token, updated_refresh_token = user_data
     user_id = current_user.user.id
     response = supabase.table("business_owner").select("email").eq('id', user_id).execute()
     user_email = response.data[0]['email']
@@ -76,7 +81,7 @@ async def upsert_file(
     }
     print(data)
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, read=30.0)) as client:
             response = await client.post(
                 LLM_API_URL[file_extension],
                 headers=headers,
@@ -99,4 +104,41 @@ async def upsert_file(
             status_code=exc.response.status_code,
             detail=exc.response.text
         )
-    
+    final_response = JSONResponse(content={
+        'status': 'success',
+        'data': 'File uploaded successfully',
+    })
+    if updated_access_token and updated_refresh_token:
+        is_production = os.getenv("ENV") == "production"
+        print(is_production)
+        if is_production:
+            final_response.set_cookie(
+                key="access_token",
+                value=updated_access_token,
+                httponly=False,
+                secure=True,
+                samesite="None",
+            )
+            final_response.set_cookie(
+                key="refresh_token",
+                value=updated_refresh_token,
+                httponly=False,
+                secure=True,
+                samesite="None",
+            )
+        else:
+            final_response.set_cookie(
+                key="access_token",
+                value=updated_access_token,
+                httponly=False,
+                secure=False,
+                samesite="Lax",
+            )
+            final_response.set_cookie(
+                key="refresh_token",
+                value=updated_refresh_token,
+                httponly=False,
+                secure=False,
+                samesite="Lax",
+            )
+    return final_response
