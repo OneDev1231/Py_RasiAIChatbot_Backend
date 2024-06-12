@@ -120,24 +120,3 @@ def refresh_token(response: Response, refresh_token: Optional[str] = Cookie(None
     resp.set_cookie(key="access_token", value=new_access_token, httponly=True, secure=True, samesite="Lax")
     resp.set_cookie(key="refresh_token", value=new_refresh_token, httponly=True, secure=True, samesite="Lax")
     return resp
-
-@router.post("/signout")
-def signout(request: Request):
-    try:
-        # This assumes that the request includes a session or access token in cookies
-        
-        token = request.cookies.get("access_token")
-        print(token)
-        if not token:
-            raise HTTPException(status_code=400, detail="No access token provided")
-
-        # Call Supabase signout or session invalidation logic here
-        
-        # Supabase currently does not have a direct signout method on server-side using the python client.
-        # You might need to handle session or JWT revocation on the client side.
-
-        response = {"message": "Signout successful"}
-        return response
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

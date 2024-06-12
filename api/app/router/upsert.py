@@ -125,6 +125,7 @@ async def add_chatbot(
                 httponly=False,
                 secure=True,
                 samesite="Lax",
+                domain='.rasi.ai',
             )
             final_response.set_cookie(
                 key="refresh_token",
@@ -132,6 +133,7 @@ async def add_chatbot(
                 httponly=False,
                 secure=True,
                 samesite="Lax",
+                domain='.rasi.ai',
             )
         else:
             final_response.set_cookie(
@@ -201,6 +203,7 @@ async def upsert_file(
                 httponly=False,
                 secure=True,
                 samesite="Lax",
+                domain='.rasi.ai',
             )
             final_response.set_cookie(
                 key="refresh_token",
@@ -208,6 +211,7 @@ async def upsert_file(
                 httponly=False,
                 secure=True,
                 samesite="Lax",
+                domain='.rasi.ai',
             )
         else:
             final_response.set_cookie(

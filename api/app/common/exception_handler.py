@@ -10,7 +10,22 @@ async def custom_http_exception_handler(request: Request, exc: HTTPException):
     updated_access_token = request.state.updated_access_token
     updated_refresh_token = request.state.updated_refresh_token
     if updated_access_token:
-        response.set_cookie(key="access_token", value=updated_access_token)
+        response.set_cookie(
+            key="access_token",
+            value=updated_access_token,
+            httponly=False,
+            secure=True,
+            samesite="Lax",
+            domain='.rasi.ai',
+        )
+                
     if updated_refresh_token:
-        response.set_cookie(key="refresh_token", value=updated_refresh_token)
+        response.set_cookie(
+            key="refresh_token", 
+            value=updated_refresh_token,
+            httponly=False,
+            secure=True,
+            samesite="Lax",
+            domain='.rasi.ai',
+        )
     return response

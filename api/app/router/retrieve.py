@@ -39,6 +39,7 @@ async def getChatbots(
                 httponly=False,
                 secure=True,
                 samesite="Lax",
+                domain='.rasi.ai',
             )
             final_response.set_cookie(
                 key="refresh_token",
@@ -46,6 +47,7 @@ async def getChatbots(
                 httponly=False,
                 secure=True,
                 samesite="Lax",
+                domain='.rasi.ai',
             )
         else:
             final_response.set_cookie(
