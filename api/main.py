@@ -14,8 +14,12 @@ from dotenv import load_dotenv
 load_dotenv()
 app = FastAPI()
 
-allowed_origins = os.getenv("ALLOWED_ORIGINS").split(',')
-print(allowed_origins)
+allowed_origins = [
+    "http://localhost",
+    "http://localhost:3000",  # Next.js development server
+    "https://www.rasi.ai",
+    "https://sales-ai-chatbot-backend.vercel.app",
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
