@@ -68,14 +68,14 @@ def signin(request: SignInRequest):
                 value=response.session.access_token,
                 httponly=False,
                 secure=True,
-                samesite="None",
+                samesite="Lax",
             )
             resp.set_cookie(
                 key="refresh_token",
                 value=response.session.refresh_token,
                 httponly=False,
                 secure=True,
-                samesite="None",
+                samesite="Lax",
             )
         else:
             resp.set_cookie(
