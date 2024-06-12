@@ -38,14 +38,14 @@ async def getChatbots(
                 value=updated_access_token,
                 httponly=False,
                 secure=True,
-                samesite="None",
+                samesite="Lax",
             )
             final_response.set_cookie(
                 key="refresh_token",
                 value=updated_refresh_token,
                 httponly=False,
                 secure=True,
-                samesite="None",
+                samesite="Lax",
             )
         else:
             final_response.set_cookie(

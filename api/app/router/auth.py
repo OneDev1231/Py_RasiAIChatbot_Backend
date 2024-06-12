@@ -69,6 +69,7 @@ def signin(request: SignInRequest):
                 httponly=False,
                 secure=True,
                 samesite="Lax",
+                domain='.rasi.ai',
             )
             resp.set_cookie(
                 key="refresh_token",
@@ -76,6 +77,7 @@ def signin(request: SignInRequest):
                 httponly=False,
                 secure=True,
                 samesite="Lax",
+                domain='.rasi.ai',
             )
         else:
             resp.set_cookie(
