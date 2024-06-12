@@ -1,5 +1,5 @@
 from typing import List, Optional, Tuple
-from fastapi import APIRouter, Depends, File, Form, UploadFile, HTTPException, status
+from fastapi import APIRouter, Depends, File, Form, Request, Response, UploadFile, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import httpx
@@ -52,15 +52,26 @@ async def add_chatbot(request: AddChatbotRequest, file: UploadFile = File(...), 
     except Exception as e:
         print("error: ", e)
 
-@router.post("/upsert_file/")
+@router.post("/upsert_file")
 async def upsert_file(
+    request: Request,
+    response: Response,
     file: UploadFile = File(...),
     chatbotName: str = Form(...),
     user_data: Tuple[dict, Optional[str], Optional[str]] = Depends(get_current_user)
 ):
     current_user, updated_access_token, updated_refresh_token = user_data
+
+    request.state.updated_access_token = updated_access_token
+    request.state.updated_refresh_token = updated_refresh_token
+
+
     user_id = current_user.user.id
     response = supabase.table("business_owner").select("email").eq('id', user_id).execute()
+
+    if not response.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
     user_email = response.data[0]['email']
 
     file_contents =  await file.read()
@@ -68,7 +79,6 @@ async def upsert_file(
     file_to_send = ("files", (file.filename, file_contents, file.content_type))
     file_name = file.filename
 
-    # print(files_name)
     headers = {
         "Authorization": f"Bearer {LLM_BEARER_TOKEN}"
     }
@@ -82,28 +92,34 @@ async def upsert_file(
     print(data)
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, read=30.0)) as client:
-            response = await client.post(
+            api_response = await client.post(
                 LLM_API_URL[file_extension],
                 headers=headers,
                 data=data,
                 files=[file_to_send]
             )
-            response.raise_for_status()
-    except httpx.TimeoutException as exc:
-        raise HTTPException(
-            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail="Request timed out while contacting the third-party API"
-        )
-    except httpx.RequestError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while requesting {exc.request.url}: {str(exc)}"
-        )
-    except httpx.HTTPStatusError as exc:
-        raise HTTPException(
-            status_code=exc.response.status_code,
-            detail=exc.response.text
-        )
+            print("API Response:", api_response)
+            print("Response Status Code:", api_response.status_code)
+            print("Response Content:", api_response.text)
+
+        if api_response.status_code != 200:
+            print("here")  # Adjust `200` if your API uses different success codes
+            raise HTTPException(status_code=api_response.status_code, detail="Error Occurred")    
+    except Exception as e:
+        raise HTTPException(status_code=501, detail=str(e))
+
+    try:
+        store_response = supabase.rpc(
+            'update_upsert_file_list',
+            {
+                'chatbot_name': chatbotName,
+                'new_file': file_name
+            }
+        ).execute()
+        # return {"message": "File appended successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=501, detail=str(e))
+    
     final_response = JSONResponse(content={
         'status': 'success',
         'data': 'File uploaded successfully',

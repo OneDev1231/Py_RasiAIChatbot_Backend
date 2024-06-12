@@ -1,8 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
+from api.app.common.exception_handler import custom_http_exception_handler
 
 from .app.router import auth as auth
 from .app.router import upsert as upsert
+from .app.router import retrieve as retrieve
 
 import uvicorn
 import os
@@ -22,6 +25,8 @@ app.add_middleware(
 
 app.include_router(auth.router, tags=["auth"])
 app.include_router(upsert.router, tags=["upsert"])
+app.include_router(retrieve.router, tags=["retrieve"])
+app.add_exception_handler(HTTPException, custom_http_exception_handler)
 
 # define the route:
 @app.get("/", tags=["root"])
