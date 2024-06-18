@@ -15,6 +15,8 @@ supabase: Client = create_client(SUPABASE_PROJECT_URL, SUPABASE_ANON_PUBLIC_KEY)
 
 
 def get_refresh_token(refresh_token: str):
+    response = supabase.auth.get_session()
+    print("--------------------------------------------------------------------------\n", response)
     response = supabase.auth.refresh_session(refresh_token).model_dump()
     # print(response)
     if response.get("error"):
