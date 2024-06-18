@@ -16,7 +16,7 @@ async def llm_query(email = str, message = str, chatbotName = str, prompt = str)
     print(LLM_BEARER_TOKEN)
     print(QUERY_LLM_URL)
     headers = {
-        "Authorization": f"Bearer {LLM_BEARER_TOKEN}=",
+        "Authorization": f"Bearer {LLM_BEARER_TOKEN}",
         "Content-Type": "application/json"
     }
 

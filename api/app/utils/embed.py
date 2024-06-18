@@ -28,7 +28,7 @@ async def embed_file(email = str, name = str, file = File):
     file_name = file.filename
     print(LLM_BEARER_TOKEN)
     headers = {
-        "Authorization": f"Bearer {LLM_BEARER_TOKEN}="
+        "Authorization": f"Bearer {LLM_BEARER_TOKEN}"
     }
 
     data = {
@@ -61,7 +61,7 @@ async def embed_file(email = str, name = str, file = File):
 async def embed_text(email = str, name = str, text = str):
     print(LLM_BEARER_TOKEN)
     headers = {
-        "Authorization": f"Bearer {LLM_BEARER_TOKEN}="
+        "Authorization": f"Bearer {LLM_BEARER_TOKEN}"
     }
 
     json_data = {
