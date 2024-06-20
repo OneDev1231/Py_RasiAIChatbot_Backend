@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.app.common.exception_handler import custom_http_exception_handler
+from app.common.exception_handler import custom_http_exception_handler
 
-from .app.router import auth as auth
-from .app.router import chatbot as chatbot
-from .app.router import messages as messages
+from app.router import auth as auth
+from app.router import chatbot as chatbot
+from app.router import messages as messages
 
 import uvicorn
 import os
@@ -41,4 +41,4 @@ def root():
 
 # define the entry point. In the entry point, using uvicorn to run server
 if __name__ == "__main__":
-    uvicorn.run("app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
