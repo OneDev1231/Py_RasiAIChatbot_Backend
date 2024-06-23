@@ -23,13 +23,16 @@ supabase: Client = create_client(SUPABASE_PROJECT_URL, SUPABASE_ANON_PUBLIC_KEY)
 router = APIRouter()
 
 LLM_API_URL = {
-    "csv": 'https://sales-ai-chatbot-llm.onrender.com/api/v1/vector/upsert/07674a31-a5bb-42c7-ac4b-652fa54f62e4',
-    "docx": 'https://sales-ai-chatbot-llm.onrender.com/api/v1/vector/upsert/6c057a26-0cd7-480e-b3d6-8a27cfdd2376',
-    "pdf": 'https://sales-ai-chatbot-llm.onrender.com/api/v1/vector/upsert/a9dce05f-2f47-4b25-b18e-57b65b423ca0',
-    "json": 'https://sales-ai-chatbot-llm.onrender.com/api/v1/vector/upsert/3e7d998e-f502-4c64-95ec-2de99b4b086d'
+    "csv": 'https://llm.rasi.ai/api/v1/upsert_csv',
+    "docx": 'https://llm.rasi.ai/api/v1/upsert_doc',
+    "pdf": 'https://llm.rasi.ai/api/v1/upsert_pdf',
+    "json": 'https://llm.rasi.ai/api/v1/upsert_json',
+    "txt": 'https://llm.rasi.ai/api/v1/upsert_txt',
+    "xlsx": 'https://llm.rasi.ai/api/v1/upsert_excel',
+    "pptx": 'https://llm.rasi.ai/api/v1/upsert_ppt',
 }
 
-extension_list = ["csv", "docx", "pdf", "json"]
+extension_list = ["csv", "docx", "pdf", "json", "txt", "xlsx", "pptx"]
 
 class AddChatbotRequest(BaseModel):
     chatbotName: str
@@ -85,20 +88,20 @@ async def add_chatbot(
     request.state.updated_refresh_token = updated_refresh_token
 
     user_id = current_user.user.id
-    response = supabase.table("business_owner").select("email").eq('id', user_id).execute()
+    # response = supabase.table("business_owner").select("email").eq('id', user_id).execute()
 
-    if not response.data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    # if not response.data:
+    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    user_email = response.data[0]['email']
-    print(user_email)
+    # user_email = response.data[0]['email']
+    # print(user_email)
     allowed_file_list = [
         file for file in files
         if file.filename.split('.')[-1].lower() in extension_list
     ]
 
     for file in allowed_file_list:
-        await embed_file(email=user_email, name=name, file=file)
+        await embed_file(chatbot_name=name, file=file, token=user_id)
 
     try:
         store_response = supabase.table('chatbot').insert(
@@ -167,14 +170,14 @@ async def upsert_file(
 
 
     user_id = current_user.user.id
-    response = supabase.table("business_owner").select("email").eq('id', user_id).execute()
+    # response = supabase.table("business_owner").select("email").eq('id', user_id).execute()
 
-    if not response.data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    # if not response.data:
+    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    user_email = response.data[0]['email']
+    # user_email = response.data[0]['email']
 
-    embed_response = await embed_file(email=user_email, name=chatbotName, file=file)
+    embed_response = await embed_file(chatbot_name=chatbotName, file=file, token=user_id)
     
     try:
         store_response = supabase.rpc(
@@ -244,14 +247,14 @@ async def upsert_text(
 
 
     user_id = current_user.user.id
-    response = supabase.table("business_owner").select("email").eq('id', user_id).execute()
+    # response = supabase.table("business_owner").select("email").eq('id', user_id).execute()
 
-    if not response.data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    # if not response.data:
+    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    user_email = response.data[0]['email']
+    # user_email = response.data[0]['email']
 
-    embed_response = await embed_text(email=user_email, name=chatbotName, text=text)
+    embed_response = await embed_text(name=chatbotName, text=text, token=user_id)
     
     try:
         store_response = supabase.rpc(

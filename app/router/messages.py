@@ -99,12 +99,12 @@ async def send_message(
 
     user_id = current_user.user.id
 
-    #--- Get User Email
-    user_response = supabase.table("business_owner").select("email").eq('id', user_id).execute()
+    # #--- Get User Email
+    # user_response = supabase.table("business_owner").select("email").eq('id', user_id).execute()
 
-    if not user_response.data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user_email = user_response.data[0]['email']
+    # if not user_response.data:
+    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    # user_id = user_response.data[0]['email']
     #-----Insert user message onto the message history table.
     try:
         insert_response = supabase.table("test_chat_history").insert(
@@ -131,9 +131,9 @@ async def send_message(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found")
     
     prompt = prompt_response.data[0]['prompt']
-    llm_response = await llm_query(email=user_email, message=message, chatbotName=chatbotName, prompt=prompt)
+    llm_response = await llm_query(customer_id="testCustomer", message=message, chatbot_name=chatbotName, prompt=prompt, token=user_id)
     print(llm_response)
-    reply_message = llm_response['text']
+    reply_message = llm_response
     current_time = datetime.now().isoformat()
     try:
         insert_response = supabase.table("test_chat_history").insert(
