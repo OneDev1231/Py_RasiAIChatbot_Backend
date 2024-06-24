@@ -90,6 +90,7 @@ async def send_message(
     message: str = Form(...),
     createdAt: str = Form(...),
     chatbotName: str = Form(...),
+    customerId: str = Form(...),
     user_data: Tuple[dict, Optional[str], Optional[str]] = Depends(get_current_user)
 ):
     current_user, updated_access_token, updated_refresh_token = user_data
@@ -125,13 +126,13 @@ async def send_message(
     
     #-----Get the prompt of the chatbot
     prompt_response = supabase.table("chatbot").select("prompt").eq('chatbotName', chatbotName).eq('user_id', user_id).execute()
-    print(prompt_response)
+    print(prompt_response.data)
 
     if not prompt_response.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found")
-    
+    print("here")
     prompt = prompt_response.data[0]['prompt']
-    llm_response = await llm_query(customer_id="testCustomer", message=message, chatbot_name=chatbotName, prompt=prompt, token=user_id)
+    llm_response = await llm_query(customer_id=customerId, message=message, chatbot_name=chatbotName, prompt=prompt, token=user_id)
     print(llm_response)
     reply_message = llm_response
     current_time = datetime.now().isoformat()
@@ -151,7 +152,7 @@ async def send_message(
     
 
     final_response = JSONResponse(content={
-        'message': reply_message,
+        'message': "Success",
         'createdAt': current_time,
     })
     if updated_access_token and updated_refresh_token:
