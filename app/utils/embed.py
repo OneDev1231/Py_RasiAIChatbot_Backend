@@ -83,9 +83,7 @@ async def embed_file(chatbot_name = str, file = File, token = str):
             "index_name": chatbot_name
         }
 
-        files = {"file": (file.filename, file.file)}
-        print(type(files))
-
+        files = {"file": (file.filename, file_contents, file.content_type)}
         print(data)
 
         if file_extension not in LLM_API_URL:
