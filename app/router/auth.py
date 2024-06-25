@@ -24,7 +24,7 @@ class SignInRequest(BaseModel):
     email: str
     password: str
 
-@router.post("/signup/")
+@router.post("/signup")
 def signup(request: SignUpRequest):
     try:
         response_signup = supabase.auth.sign_up({
@@ -48,7 +48,7 @@ def signup(request: SignUpRequest):
         print("Error during sign-up:", e)
         return e
 
-@router.post("/signin/")
+@router.post("/signin")
 def signin(request: SignInRequest):
     try:
         response = supabase.auth.sign_in_with_password({
