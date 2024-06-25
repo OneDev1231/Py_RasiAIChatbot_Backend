@@ -152,7 +152,7 @@ async def send_message(
     
 
     final_response = JSONResponse(content={
-        'message': "Success",
+        'message': reply_message,
         'createdAt': current_time,
     })
     if updated_access_token and updated_refresh_token:
