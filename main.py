@@ -18,7 +18,7 @@ allowed_origins = [
     "http://localhost",
     "http://localhost:3000",  # Next.js development server
     "https://www.rasi.ai",
-    "https://sales-ai-chatbot-backend.vercel.app",
+    "https://rasi.ai",
 ]
 app.add_middleware(
     CORSMiddleware,
