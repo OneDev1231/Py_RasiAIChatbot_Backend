@@ -30,9 +30,8 @@ LLM_API_URL_TEST = {
     "pptx": 'http://localhost:4003/api/v1/upsert_ppt/',
 }
 
+DELETE_VECTOR_API = "https://llm.rasi.ai/api/v1/delete_all_vectors/"
 extension_list = ["csv", "docx", "pdf", "json", "txt", "xlsx", "pptx"]
-
-
 
 async def embed_file(chatbot_name = str, file = File, token = str):
     # LLM_BEARER_TOKEN = token
@@ -114,8 +113,6 @@ async def embed_file(chatbot_name = str, file = File, token = str):
     except Exception as e:
         print(f"Caught General Exception: {str(e)}")
         raise HTTPException(status_code=501, detail=str(e))  # Handle general exceptions separately
-    
-
 
 async def embed_text(name = str, text = str, token = str):
     LLM_BEARER_TOKEN = token
@@ -149,3 +146,24 @@ async def embed_text(name = str, text = str, token = str):
         return {'success': 'Upsert vector DB'}
     except Exception as e:
         raise HTTPException(status_code=501, detail=str(e))
+    
+async def delete_vectors(chatbot_name = str, token = str):
+    DELETE_VECTOR_API = f"https://llm.rasi.ai/api/v1/delete_all_vectors/{chatbot_name}"
+    LLM_BEARER_TOKEN = token
+    headers = {
+        "Authorization": f"Bearer {LLM_BEARER_TOKEN}"
+    }
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, read=30.0)) as client:
+            api_response = await client.delete(
+                DELETE_VECTOR_API,
+                headers=headers,
+            )
+            print("API Response:", api_response)
+        if api_response.status_code != 200:
+            raise HTTPException(status_code=api_response.status_code, detail=f"Error Occurred: {api_response.text}")
+        return {'success': 'Vectors deleted successfully from the remote API', 'details': api_response.json()}
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=501, detail=f"HTTP Request Error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=501, detail=f"An unexpected error occurred: {str(e)}")

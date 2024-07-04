@@ -40,7 +40,6 @@ async def llm_query(customer_id = str, message = str, chatbot_name = str, prompt
     except Exception as e:
         raise HTTPException(status_code=501, detail=str(e))
 
-
 async def create_prompt(chatbot_name = str, business_name = str, industry = str, primary_language = str, selected_functions_string = str, communication_style = str, token = str):
     LLM_BEARER_TOKEN = token
     headers = {
