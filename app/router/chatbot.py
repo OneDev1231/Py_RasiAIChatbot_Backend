@@ -6,6 +6,8 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
+from app.utils.llm_query import create_prompt
+
 from ..utils.embed import embed_file, embed_text
 from ..utils.get_user import get_current_user
 from dotenv import load_dotenv
@@ -78,8 +80,12 @@ async def add_chatbot(
     request: Request,
     response: Response,
     files: List[UploadFile] = File(...),
-    name: str = Form(...),
-    prompt: str = Form(...),
+    chatbot_name: str = Form(...),
+    business_name: str = Form(...),
+    industry: str = Form(...),
+    primary_language: str = Form(...),
+    selected_functions: str = Form(...),
+    communication_style: str = Form(...),
     user_data: Tuple[dict, Optional[str], Optional[str]] = Depends(get_current_user)
 ):
     current_user, updated_access_token, updated_refresh_token = user_data
@@ -95,29 +101,32 @@ async def add_chatbot(
 
     # user_email = response.data[0]['email']
     # print(user_email)
+
     allowed_file_list = [
         file for file in files
         if file.filename.split('.')[-1].lower() in extension_list
     ]
 
     for file in allowed_file_list:
-        await embed_file(chatbot_name=name, file=file, token=user_id)
+        await embed_file(chatbot_name=chatbot_name, file=file, token=user_id)
+    
+
+    prompt_text = await create_prompt(chatbot_name, business_name, industry, primary_language, selected_functions, communication_style, user_id)
+    print(prompt_text)
+
 
     try:
         store_response = supabase.table('chatbot').insert(
             {
                 'user_id': user_id, 
-                'chatbotName': name, 
-                'prompt': prompt, 
+                'chatbotName': chatbot_name, 
+                'prompt': prompt_text, 
                 'upsert_filelist': [file.filename for file in allowed_file_list]
             }
         ).execute()
     except Exception as e:
         raise HTTPException(status_code=501, detail=str(e))
-    final_response = JSONResponse(content={
-        'status': 'success',
-        'data': 'Add Chatbot success',
-    })
+    final_response = JSONResponse(content={'prompt': prompt_text})
     if updated_access_token and updated_refresh_token:
         is_production = os.getenv("ENV") == "production"
         print(is_production)
@@ -308,7 +317,6 @@ async def upsert_text(
                 samesite="Lax",
             )
     return final_response
-
 
 @router.post("/get_chatbots")
 async def get_chatbots(
