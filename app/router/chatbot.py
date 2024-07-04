@@ -434,23 +434,21 @@ async def delete_upsertfile(
     request: Request,
     response: Response,
     chatbot_name: str = Form(...),
-    user_id: str = Form(...),
+    user_data: Tuple[dict, Optional[str], Optional[str]] = Depends(get_current_user)
 ):
-    # user_data: Tuple[dict, Optional[str], Optional[str]] = Depends(get_current_user)
-    # current_user, updated_access_token, updated_refresh_token = user_data
+    current_user, updated_access_token, updated_refresh_token = user_data
 
-    # request.state.updated_access_token = updated_access_token
-    # request.state.updated_refresh_token = updated_refresh_token
+    request.state.updated_access_token = updated_access_token
+    request.state.updated_refresh_token = updated_refresh_token
 
 
-    # user_id = current_user.user.id
+    user_id = current_user.user.id
 
     #delete the upsert_filelist on table
     bot_response = supabase.table("chatbot").update({
         "upsert_filelist": None
     }).eq('chatbotName', chatbot_name).eq('user_id', user_id).execute()
 
-    # delete_vecto
     # delete_vectors
     delete_response = await delete_vectors(chatbot_name, user_id)
 
@@ -458,40 +456,40 @@ async def delete_upsertfile(
         'status': 'success',
         'data': 'Upserted files are deleted successfully',
     })
-    # if updated_access_token and updated_refresh_token:
-    #     is_production = os.getenv("ENV") == "production"
-    #     print(is_production)
-    #     if is_production:
-    #         final_response.set_cookie(
-    #             key="access_token",
-    #             value=updated_access_token,
-    #             httponly=False,
-    #             secure=True,
-    #             samesite="Lax",
-    #             domain='.rasi.ai',
-    #         )
-    #         final_response.set_cookie(
-    #             key="refresh_token",
-    #             value=updated_refresh_token,
-    #             httponly=False,
-    #             secure=True,
-    #             samesite="Lax",
-    #             domain='.rasi.ai',
-    #         )
-    #     else:
-    #         final_response.set_cookie(
-    #             key="access_token",
-    #             value=updated_access_token,
-    #             httponly=False,
-    #             secure=False,
-    #             samesite="Lax",
-    #         )
-    #         final_response.set_cookie(
-    #             key="refresh_token",
-    #             value=updated_refresh_token,
-    #             httponly=False,
-    #             secure=False,
-    #             samesite="Lax",
-    #         )
+    if updated_access_token and updated_refresh_token:
+        is_production = os.getenv("ENV") == "production"
+        print(is_production)
+        if is_production:
+            final_response.set_cookie(
+                key="access_token",
+                value=updated_access_token,
+                httponly=False,
+                secure=True,
+                samesite="Lax",
+                domain='.rasi.ai',
+            )
+            final_response.set_cookie(
+                key="refresh_token",
+                value=updated_refresh_token,
+                httponly=False,
+                secure=True,
+                samesite="Lax",
+                domain='.rasi.ai',
+            )
+        else:
+            final_response.set_cookie(
+                key="access_token",
+                value=updated_access_token,
+                httponly=False,
+                secure=False,
+                samesite="Lax",
+            )
+            final_response.set_cookie(
+                key="refresh_token",
+                value=updated_refresh_token,
+                httponly=False,
+                secure=False,
+                samesite="Lax",
+            )
     return final_response
     
